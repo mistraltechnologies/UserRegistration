@@ -16,7 +16,7 @@ class UserRepositoryImpl @Inject()(protected val dbConfigProvider: DatabaseConfi
 
   class UserTable(tag: Tag) extends Table[User](tag, "USER") {
 
-    def id: Rep[Long] = column[Long]("ID", O.PrimaryKey, O.AutoInc)
+    def id: Rep[Option[Long]] = column[Long]("ID", O.PrimaryKey, O.AutoInc).?
 
     def firstName: Rep[String] = column[String]("FIRST_NAME")
 
@@ -28,7 +28,18 @@ class UserRepositoryImpl @Inject()(protected val dbConfigProvider: DatabaseConfi
   private val Users = TableQuery[UserTable]
 
   override def add(user: User): Future[Unit] = {
-    db.run(Users += user).map { _ => () }
+
+    val insertIfNotDuplicateEmail = Users.forceInsertQuery {
+      val emailExists = (for (u <- Users if u.email === user.email.bind) yield u).exists
+      val insert = (None, user.firstName.bind, user.email.bind) <> (User.apply _ tupled, User.unapply)
+      for (u <- Query(insert) if !emailExists) yield u
+    }
+
+    db.run(insertIfNotDuplicateEmail)
+      .map {
+        case 0 => throw new Exception("Cannot add user - duplicate email")
+        case _ => ()
+      }
   }
 
   override def getById(id: Long): Future[Option[User]] = {

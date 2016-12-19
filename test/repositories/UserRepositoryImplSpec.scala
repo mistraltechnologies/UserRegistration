@@ -10,6 +10,7 @@ import play.api.{Application, Mode}
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
+import scala.util.Failure
 
 class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
 
@@ -32,9 +33,9 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     private val app2userRepository = Application.instanceCache[UserRepositoryImpl]
     val userRepository: UserRepositoryImpl = app2userRepository(app)
 
-    val user1 = User(1, "Bob", "bob@bob.com")
-    val user2 = User(2, "Bill", "bill@bill.com")
-    val user3 = User(3, "Ben", "ben@ben.com")
+    val user1 = User(Some(1), "Bob", "bob@bob.com")
+    val user2 = User(Some(2), "Bill", "bill@bill.com")
+    val user3 = User(Some(3), "Ben", "ben@ben.com")
   }
 
   "UserRepository" should {
@@ -100,6 +101,18 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
       val maybeUser = Await.result(futureMaybeUser, 1 second)
 
       maybeUser must equal(Option.empty)
+    }
+
+
+    "not add user with duplicate email" in new WithUserRepository() {
+      val futureAdded = for {
+        _ <- userRepository.add(user1)
+        user <- userRepository.add(User(None, "bobby", "bob@bob.com"))
+      } yield user
+
+      val added = Await.ready(futureAdded, 1 second)
+
+      added.value.get must matchPattern { case Failure(_) => }
     }
   }
 
