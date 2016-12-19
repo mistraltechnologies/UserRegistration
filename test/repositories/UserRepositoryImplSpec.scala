@@ -33,9 +33,13 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     private val app2userRepository = Application.instanceCache[UserRepositoryImpl]
     val userRepository: UserRepositoryImpl = app2userRepository(app)
 
-    val user1 = User(Some(1), "Bob", "bob@bob.com")
-    val user2 = User(Some(2), "Bill", "bill@bill.com")
-    val user3 = User(Some(3), "Ben", "ben@ben.com")
+    val user1 = User(None, "Bob", "bob@bob.com")
+    val user2 = User(None, "Bill", "bill@bill.com")
+    val user3 = User(None, "Ben", "ben@ben.com")
+
+    val user1WithId = user1.copy(id = Some(1))
+    val user2WithId = user2.copy(id = Some(2))
+    val user3WithId = user3.copy(id = Some(3))
   }
 
   "UserRepository" should {
@@ -52,7 +56,7 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
       val users = Await.result(futureUsers, 1 second)
 
       users.size must equal(3)
-      users.toSet must equal(Set(user1, user2, user3))
+      users.toSet must equal(Set(user1WithId, user2WithId, user3WithId))
     }
 
 
@@ -67,7 +71,7 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
 
       val maybeUser = Await.result(futureMaybeUser, 1 second)
 
-      maybeUser must equal(Some(user2))
+      maybeUser must equal(Some(user2WithId))
     }
 
 
@@ -91,7 +95,7 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
 
       val maybeUser = Await.result(futureMaybeUser, 1 second)
 
-      maybeUser must equal(Some(user3))
+      maybeUser must equal(Some(user3WithId))
     }
 
 
