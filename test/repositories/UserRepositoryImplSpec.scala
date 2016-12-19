@@ -3,8 +3,6 @@ package repositories
 import model.User
 import org.scalatest.TestData
 import org.scalatestplus.play.{OneAppPerTest, PlaySpec}
-import play.api.db.DBApi
-import play.api.db.evolutions.{Evolution, Evolutions, EvolutionsComponents}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Mode}
@@ -37,11 +35,6 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     val user1 = User(1, "Bob", "bob@bob.com")
     val user2 = User(2, "Bill", "bill@bill.com")
     val user3 = User(3, "Ben", "ben@ben.com")
-
-    private val app2databaseApi = Application.instanceCache[DBApi]
-    val databaseApi = app2databaseApi(app)
-
-    Evolutions.applyFor("default")
   }
 
   "UserRepository" should {
@@ -62,7 +55,7 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     }
 
 
-    "add a users and retrieve one by id" in new WithUserRepository() {
+    "retrieve a matching user by id" in new WithUserRepository() {
 
       val futureMaybeUser = for {
         _ <- userRepository.add(user1)
@@ -77,7 +70,16 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     }
 
 
-    "add a users and retrieve one by email" in new WithUserRepository() {
+    "retrieve no user by id when not found" in new WithUserRepository() {
+      val futureMaybeUser = userRepository.getById(1)
+
+      val maybeUser = Await.result(futureMaybeUser, 1 second)
+
+      maybeUser must equal(Option.empty)
+    }
+
+
+    "retrieve a matching user by email" in new WithUserRepository() {
 
       val futureMaybeUser = for {
         _ <- userRepository.add(user1)
@@ -91,6 +93,14 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
       maybeUser must equal(Some(user3))
     }
 
+
+    "retrieve no user by email when not found" in new WithUserRepository() {
+      val futureMaybeUser = userRepository.getByEmail("ben@ben.com")
+
+      val maybeUser = Await.result(futureMaybeUser, 1 second)
+
+      maybeUser must equal(Option.empty)
+    }
   }
 
 }
