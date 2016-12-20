@@ -14,7 +14,7 @@ import scala.util.Failure
 
 class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
 
-  implicit override def newAppForTest(testData: TestData): Application =
+  override def newAppForTest(testData: TestData): Application =
     new GuiceApplicationBuilder()
       .configure(inMemoryDatabase())
       .bindings(bind[UserRepository].to[UserRepositoryImpl])
@@ -29,7 +29,7 @@ class UserRepositoryImplSpec extends PlaySpec with OneAppPerTest {
     )
   }
 
-  class WithUserRepository {
+  trait WithUserRepository {
     private val app2userRepository = Application.instanceCache[UserRepositoryImpl]
     val userRepository: UserRepositoryImpl = app2userRepository(app)
 
