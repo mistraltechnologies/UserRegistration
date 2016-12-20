@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
 
   // Test
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  "org.mockito" % "mockito-all" % "1.9.5" % Test,
   "com.h2database" % "h2" % "1.4.193" % Test
 )
 
