@@ -3,7 +3,7 @@ package model
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, Reads, Writes}
 
-case class User (id: Option[Long], firstName: String, email: String)
+case class User(id: Option[Long], firstName: String, email: String)
 
 object User {
 

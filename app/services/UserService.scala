@@ -10,5 +10,5 @@ trait UserService {
 
   def registerUser(user: User): Future[Unit]
 
-  def getUserByEmail(email: String) : Future[Option[User]]
+  def getUserByEmail(email: String): Future[Option[User]]
 }
