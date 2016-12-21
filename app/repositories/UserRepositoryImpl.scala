@@ -22,7 +22,7 @@ class UserRepositoryImpl @Inject()(protected val dbConfigProvider: DatabaseConfi
 
     def email: Rep[String] = column[String]("EMAIL")
 
-    override def * = (id, firstName, email) <> (User.tupled, User.unapply)
+    override def * = (id, firstName, email) <> ((User.apply _).tupled, User.unapply)
   }
 
   private val Users = TableQuery[UserTable]
@@ -31,7 +31,7 @@ class UserRepositoryImpl @Inject()(protected val dbConfigProvider: DatabaseConfi
 
     val insertIfNotDuplicateEmail = Users.forceInsertQuery {
       val emailExists = (for (u <- Users if u.email === user.email.bind) yield u).exists
-      val insert = (None, user.firstName.bind, user.email.bind) <> (User.apply _ tupled, User.unapply)
+      val insert = (None, user.firstName.bind, user.email.bind) <> ((User.apply _).tupled, User.unapply)
       for (u <- Query(insert) if !emailExists) yield u
     }
 

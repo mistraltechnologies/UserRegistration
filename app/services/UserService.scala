@@ -9,4 +9,6 @@ import scala.concurrent.Future
 trait UserService {
 
   def registerUser(user: User): Future[Unit]
+
+  def getUserByEmail(email: String) : Future[Option[User]]
 }

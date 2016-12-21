@@ -14,7 +14,9 @@ class UserServiceImpl @Inject()(userRepository: UserRepository)extends UserServi
     userRepository.add(user)
   }
 
-
+  override def getUserByEmail(email: String): Future[Option[User]] = {
+    userRepository.getByEmail(email)
+  }
 }
 
 

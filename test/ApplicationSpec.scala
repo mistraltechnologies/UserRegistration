@@ -79,6 +79,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       status(response2) mustBe BAD_REQUEST
       contentAsString(response2) mustBe "Cannot add user - duplicate email"
     }
+
   }
 
 }
