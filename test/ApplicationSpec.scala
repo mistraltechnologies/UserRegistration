@@ -1,4 +1,7 @@
+import java.util.UUID
+
 import org.scalatestplus.play._
+import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
@@ -37,6 +40,45 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "2"
     }
 
+  }
+
+  "UserController" should {
+
+    trait WithFixture {
+      val uniqueEmail = UUID.randomUUID().toString + "@uuid.com"
+
+      val newUserAsJson = Json.parse(
+        s"""
+           |{
+           |"firstName": "Dave",
+           |"email": "$uniqueEmail"
+           |}
+          """.stripMargin)
+
+      val newUserPostRequest = FakeRequest(POST, "/users")
+        .withHeaders((CONTENT_TYPE, JSON))
+        .withJsonBody(newUserAsJson)
+
+    }
+
+    "register user and return 204 (no content)" in new WithFixture {
+
+      val response = route(app, newUserPostRequest).get
+
+      status(response) mustBe NO_CONTENT
+    }
+
+    "return 400 response when registering user with duplicate email" in new WithFixture {
+
+      val response1 = route(app, newUserPostRequest).get
+
+      status(response1) mustBe NO_CONTENT
+
+      val response2 = route(app, newUserPostRequest).get
+
+      status(response2) mustBe BAD_REQUEST
+      contentAsString(response2) mustBe "Cannot add user - duplicate email"
+    }
   }
 
 }
